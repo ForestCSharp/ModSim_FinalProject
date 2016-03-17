@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2015
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgentBasedNaturalSelection.CSharp.Plugins", "AgentBasedNaturalSelection.CSharp.Plugins.csproj", "{A54D32DC-7C96-65E2-C071-A88858DA7D23}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgentBasedNaturalSelection.CSharp", "AgentBasedNaturalSelection.CSharp.csproj", "{8878FCDC-F6F5-E135-069E-576F2BAB67F7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgentBasedNaturalSelection.CSharp.Editor", "AgentBasedNaturalSelection.CSharp.Editor.csproj", "{853398AF-D7E4-AC34-D48E-A7A6AFA30B66}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A54D32DC-7C96-65E2-C071-A88858DA7D23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A54D32DC-7C96-65E2-C071-A88858DA7D23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A54D32DC-7C96-65E2-C071-A88858DA7D23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A54D32DC-7C96-65E2-C071-A88858DA7D23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8878FCDC-F6F5-E135-069E-576F2BAB67F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8878FCDC-F6F5-E135-069E-576F2BAB67F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8878FCDC-F6F5-E135-069E-576F2BAB67F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8878FCDC-F6F5-E135-069E-576F2BAB67F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{853398AF-D7E4-AC34-D48E-A7A6AFA30B66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{853398AF-D7E4-AC34-D48E-A7A6AFA30B66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{853398AF-D7E4-AC34-D48E-A7A6AFA30B66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{853398AF-D7E4-AC34-D48E-A7A6AFA30B66}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
