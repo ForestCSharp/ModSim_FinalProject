@@ -15,8 +15,22 @@ public class Gene : MonoBehaviour {
     //This is used when breeding to construct Punnett Squares
     public int Locus;
 
-	// Use this for initialization
-	void Start () {
+    private int survivability;
+    public int Survivability
+    {
+        get { return survivability; }
+        set { survivability = value; }
+    }
+
+    private int desirability;
+    public int Desirability
+    {
+        get { return desirability; }
+        set { desirability = value; }
+    }
+
+    // Use this for initialization
+    void Start () {
         Express();
 	}
 	
@@ -31,10 +45,14 @@ public class Gene : MonoBehaviour {
         if (First.Dominance >= Second.Dominance)
         {
             First.Express();
+            Desirability = First.Desirability;
+            Survivability = First.Survivability;
         }
         else
         {
             Second.Express();
+            Desirability = Second.Desirability;
+            Survivability = Second.Survivability;
         }
     }
 }
