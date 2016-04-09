@@ -1,43 +1,29 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+[RequireComponent (typeof(NavMeshAgent) ) ]
 public class SimpleMoveTo : MonoBehaviour {
 
-    Vector3 startLocation;
-    Vector3 endLocation;
-    float startTime;
-    float duration;
-    bool bMove;
-
-    public SimpleMoveTo()
-    {
-
-    }
+    public GameObject Target;
 
     // Use this for initialization
     void Start () {
-	}
-	
-	// Update is called once per frame
-	void Update () {
-        if (bMove)
-        {
-            transform.position = Vector3.Lerp(startLocation, endLocation, ((Time.time - startTime) / duration) * (1/(endLocation-startLocation).magnitude));
-            if (transform.position == endLocation)
-            {
-                bMove = false;
-            }
-        }
-       
+        //StartCoroutine(MyCoroutine());
+    }
+
+    IEnumerator MyCoroutine()
+    {
+        yield return new WaitForSeconds(2);
+        MoveToTarget(Target.transform.position);
+    }
+
+    // Update is called once per frame
+    void Update () {
 	}
 
-    public void MoveToTarget(Vector3 target, float Speed)
+    public void MoveToTarget(Vector3 target)
     {
-        startLocation = transform.position;
-        startTime = Time.time;
-        endLocation = target;
-        duration = 1/Speed;
-        Debug.Log(endLocation);
-        bMove = true;
+        NavMeshAgent agent = GetComponent<NavMeshAgent>();
+        agent.destination = target;
     }
 }
