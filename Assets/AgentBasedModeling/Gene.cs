@@ -16,18 +16,9 @@ public class Gene : MonoBehaviour {
     public int Locus;
 
     private int survivability;
-    public int Survivability
-    {
-        get { return survivability; }
-        set { survivability = value; }
-    }
 
     private int desirability;
-    public int Desirability
-    {
-        get { return desirability; }
-        set { desirability = value; }
-    }
+
 
     // Use this for initialization
     void Start () {
@@ -45,14 +36,24 @@ public class Gene : MonoBehaviour {
         if (First.Dominance >= Second.Dominance)
         {
             First.Express();
-            Desirability = First.Desirability;
-            Survivability = First.Survivability;
+            desirability = First.Desirability;
+            survivability = First.Survivability;
         }
         else
         {
             Second.Express();
-            Desirability = Second.Desirability;
-            Survivability = Second.Survivability;
+            desirability = Second.Desirability;
+            survivability = Second.Survivability;
         }
+    }
+
+    public int GetSurvivability()
+    {
+        return survivability;
+    }
+
+    public int GetDesirability()
+    {
+        return desirability;
     }
 }

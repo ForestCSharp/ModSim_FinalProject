@@ -5,10 +5,10 @@ using System.Collections;
 public class Allele : MonoBehaviour {
 
     //Rank of dominance (higher outranks lower)
-    public int Dominance;
+    public int Dominance = 0;
 
-    public int Desirability;
-    public int Survivability;
+    public int Desirability = 0;
+    public int Survivability = 0;
 
 	// Use this for initialization
 	void Start () {

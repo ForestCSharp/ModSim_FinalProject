@@ -5,7 +5,6 @@ using System.Collections.Generic;
 
 //Encapsulates Data and behavior of an Organism
 //
-[RequireComponent(typeof(Genotype))]
 [RequireComponent(typeof(SimpleMoveTo))]
 public class Organism : MonoBehaviour
 {
@@ -21,6 +20,8 @@ public class Organism : MonoBehaviour
     public float HungerRate = 5.0f;
     public float BreedRate = 10.0f;
     public float RoamRate = 2.0f;
+
+    public float InteractionRadius = 10.0f;
 
     //Type of Organism this organism likes to eat
     public Organism Prey;
@@ -40,23 +41,27 @@ public class Organism : MonoBehaviour
 
     private Vector3 RoamTarget;
 
+    //Current State of organism
+    private enum OrganismStateEnum { Roaming, Hunting, Breeding};
+
+    private OrganismStateEnum OrganismState = OrganismStateEnum.Roaming;
+
     // Use this for initialization
     //Cache the genotype for passing to breed function
     void Start()
     {
 
         Mover = GetComponent<SimpleMoveTo>();
-        Genotype = GetComponent<Genotype>();
+        Genotype = gameObject.AddComponent<Genotype>();
 
-        ActualSurvivability = BaseSurvivability + Genotype.GetSurvivability();
-        ActualDesirability = BaseDesirability + Genotype.GetDesirability();
+        StartCoroutine(DelayedStart());
 
-        RoamTarget = transform.position;
     }
 
     // Update is called once per frame
     void Update()
     {
+
         HungerMeter += Time.deltaTime;
         BreedMeter += Time.deltaTime;
         RoamMeter += Time.deltaTime;
@@ -83,20 +88,110 @@ public class Organism : MonoBehaviour
         RoamMeter = 0.0f;
     }
 
+    private Organism HuntTarget;
+
     //Eating Function: Searches for food and eats
     void Eat()
     {
-        List<GameObject> PreyList = GetOrganismsOfSpecies(Prey.SpeciesID);
+        //Check that prey is non null
+        if (Prey != null)
+        {
+            if (OrganismState == OrganismStateEnum.Roaming) //Acquire Target to Hunt
+            {
+                //Generate List of Prey
+                List<Organism> PreyList = GetOrganismsOfSpecies(Prey.SpeciesID);
 
-        //if food found, eat and set HungerMeter to 0.0f
-        HungerMeter = 0.0f;
+                //TODO: function that weighs closeness with weakness (lower Survivability)
+                //Find the weakest prey and set as destination
+
+                Organism Tmp = PreyList[0];
+                foreach (Organism o in PreyList)
+                {
+                    if (o.ActualSurvivability < Tmp.ActualSurvivability)
+                    {
+                        Tmp = o;
+                    }
+
+                }
+                HuntTarget = Tmp;
+
+                //Now hunting 
+                
+                OrganismState = OrganismStateEnum.Hunting;
+            }
+            else if (OrganismState == OrganismStateEnum.Hunting) //Currently Hunting Target
+            {
+
+                if (HuntTarget != null && (transform.position - HuntTarget.transform.position).magnitude <= InteractionRadius) //Actually consume prey when close enough and not null
+                {
+                    //if food found, eat and set HungerMeter to 0.0f
+                    Destroy(HuntTarget.gameObject);
+                    HuntTarget = null;
+                    transform.localScale *= 2;
+                    HungerMeter = 0.0f;
+                    OrganismState = OrganismStateEnum.Roaming;
+                }
+                else if(HuntTarget != null) //Check that prey still exists, and update destination
+                {
+                    Mover.MoveToTarget(HuntTarget.transform.position);
+                }
+                else //Hunt target null (destroyed somehow)
+                {
+                    OrganismState = OrganismStateEnum.Roaming;
+                    HungerMeter = 0.0f;
+                }
+            }
+
+
+        }
+        else
+        {
+            HungerMeter = 0.0f;
+        }
     }
+
+    private Organism MateTarget;
 
     //Breeding Function
     void Breed()
     {
-        //Find mate and move towards
-        List<GameObject> MateList = GetOrganismsOfSpecies(SpeciesID);
+        if (OrganismState == OrganismStateEnum.Roaming)
+        {
+            //Generate List of Mates
+            List<Organism> MateList = GetOrganismsOfSpecies(SpeciesID);
+            Organism Tmp = MateList[0];
+            foreach (Organism o in MateList)
+            {
+                if (o.ActualDesirability > Tmp.ActualDesirability)
+                {
+                    Tmp = o;
+                }
+
+            }
+            MateTarget = Tmp;
+            OrganismState = OrganismStateEnum.Breeding;
+
+        }
+        else if (OrganismState == OrganismStateEnum.Breeding)
+        {
+            if (MateTarget != null && (transform.position - MateTarget.transform.position).magnitude <= InteractionRadius)
+            {
+                Destroy(MateTarget.gameObject);
+                MateTarget = null;
+                BreedMeter = 0.0f;
+                Spawn(MateTarget);
+                OrganismState = OrganismStateEnum.Roaming;
+            }
+            else if (MateTarget != null)
+            {
+                Mover.MoveToTarget(MateTarget.transform.position);
+            }
+            else
+            {
+                OrganismState = OrganismStateEnum.Roaming;
+                BreedMeter = 0.0f;
+            }
+        }
 
 
         //If mate found, mate and set MateMeter to 0.0f
@@ -109,10 +204,32 @@ public class Organism : MonoBehaviour
     }
 
 
-    List<GameObject> GetOrganismsOfSpecies(int SpeciesID)
+    List<Organism> GetOrganismsOfSpecies(int SID)
     {
-        //TODO:: IMPLEMENT
-        return new List<GameObject>();
+        List<Organism> AllOrganisms = new List<Organism>();
+        AllOrganisms.AddRange(FindObjectsOfType<Organism>());
+
+        List<Organism> ReturnedOrganisms = new List<Organism>();
+        //Remove all organisms lacking SpeciesID
+        foreach (Organism o in AllOrganisms)
+        {
+            if (o.SpeciesID == SID && o != this.GetComponent<Organism>())
+            {
+                ReturnedOrganisms.Add(o);
+            }
+        }
+
+        return ReturnedOrganisms;
+    }
+
+    IEnumerator DelayedStart()
+    {
+        yield return new WaitForSeconds(1.0f);
+        ActualDesirability = BaseDesirability + Genotype.GetDesirability();
+        ActualSurvivability = BaseSurvivability + Genotype.GetSurvivability();
+
+        Debug.Log("ActualDes: " + ActualDesirability);
+        Debug.Log("ActualSurv: " + ActualSurvivability);
     }
 
 }
