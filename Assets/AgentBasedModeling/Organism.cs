@@ -13,7 +13,7 @@ public class Organism : MonoBehaviour
     public int SpeciesID;
 
     public float RoamRadius = 2;
-    public int BaseSpeed = 1000;
+    public int BaseSpeed = 4;
     public int BaseDesirability = 1;
     public int BaseSurvivability = 1;
 
@@ -53,6 +53,7 @@ public class Organism : MonoBehaviour
 
         Mover = GetComponent<SimpleMoveTo>();
         Genotype = gameObject.AddComponent<Genotype>();
+        GetComponent<NavMeshAgent>().speed = BaseSpeed;
 
         StartCoroutine(DelayedStart());
 
@@ -174,12 +175,11 @@ public class Organism : MonoBehaviour
         }
         else if (OrganismState == OrganismStateEnum.Breeding)
         {
-            if (MateTarget != null && (transform.position - MateTarget.transform.position).magnitude <= InteractionRadius)
+            if (MateTarget != null && (transform.position - MateTarget.transform.position).magnitude <= InteractionRadius) //Mate close enough
             {
-                Destroy(MateTarget.gameObject);
-                MateTarget = null;
                 BreedMeter = 0.0f;
                 Spawn(MateTarget);
+                MateTarget = null;
                 OrganismState = OrganismStateEnum.Roaming;
             }
             else if (MateTarget != null)
