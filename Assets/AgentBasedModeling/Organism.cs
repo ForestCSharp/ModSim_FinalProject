@@ -10,7 +10,7 @@ public class Organism : MonoBehaviour
 {
 
     //Species of same ID can breed
-    public int SpeciesID;
+    public uint SpeciesID;
 
     public float RoamRadius = 2;
     public int BaseSpeed = 4;
@@ -20,6 +20,7 @@ public class Organism : MonoBehaviour
     public float HungerRate = 5.0f;
     public float BreedRate = 10.0f;
     public float RoamRate = 2.0f;
+    public float RateRandomness = 0.5f;
 
     public float InteractionRadius = 10.0f;
 
@@ -31,15 +32,17 @@ public class Organism : MonoBehaviour
     private int ActualDesirability;
     private int ActualSurvivability;
 
-    private float HungerMeter = 0.0f;
-    private float BreedMeter = 0.0f;
-    private float RoamMeter = 0.0f;
+    private float HungerMeter;
+    private float BreedMeter;
+    private float RoamMeter;
 
     private Genotype Genotype;
 
     private SimpleMoveTo Mover;
 
     private Vector3 RoamTarget;
+
+    private int PreyID = -1;
 
     //Current State of organism
     private enum OrganismStateEnum { Roaming, Hunting, Breeding};
@@ -56,6 +59,15 @@ public class Organism : MonoBehaviour
         GetComponent<NavMeshAgent>().speed = BaseSpeed;
 
         StartCoroutine(DelayedStart());
+
+        if (Prey != null)
+        {
+            PreyID = (int)Prey.SpeciesID;
+        }
+
+        HungerMeter = 0.0f - UnityEngine.Random.Range(0.0f, RateRandomness); 
+        BreedMeter = 0.0f - UnityEngine.Random.Range(0.0f, RateRandomness);
+        RoamMeter = 0.0f - UnityEngine.Random.Range(0.0f, RateRandomness);
 
     }
 
@@ -86,7 +98,7 @@ public class Organism : MonoBehaviour
     {
         RoamTarget = transform.position + (Random.insideUnitSphere * RoamRadius);
         Mover.MoveToTarget(RoamTarget);
-        RoamMeter = 0.0f;
+        RoamMeter = 0.0f - UnityEngine.Random.Range(0.0f, RateRandomness);
     }
 
     private Organism HuntTarget;
@@ -95,20 +107,26 @@ public class Organism : MonoBehaviour
     void Eat()
     {
         //Check that prey is non null
-        if (Prey != null)
+        if (PreyID != -1)
         {
             if (OrganismState == OrganismStateEnum.Roaming) //Acquire Target to Hunt
             {
                 //Generate List of Prey
-                List<Organism> PreyList = GetOrganismsOfSpecies(Prey.SpeciesID);
+                List<Organism> PreyList = GetOrganismsOfSpecies(PreyID);
 
                 //TODO: function that weighs closeness with weakness (lower Survivability)
                 //Find the weakest prey and set as destination
 
-                Organism Tmp = PreyList[0];
-                foreach (Organism o in PreyList)
+                Organism Tmp;
+                if (PreyList.Count == 0)
                 {
-                    if (o.ActualSurvivability < Tmp.ActualSurvivability)
+                    HungerMeter = 0.0f - UnityEngine.Random.Range(0.0f, RateRandomness);
+                    return;
+                }
+                Tmp= PreyList[0];
+                foreach (Organism o in PreyList)
+                { 
+                    if (o != null && o.ActualSurvivability < Tmp.ActualSurvivability)
                     {
                         Tmp = o;
                     }
@@ -128,18 +146,19 @@ public class Organism : MonoBehaviour
                     //if food found, eat and set HungerMeter to 0.0f
                     Destroy(HuntTarget.gameObject);
                     HuntTarget = null;
-                    transform.localScale *= 2;
-                    HungerMeter = 0.0f;
+                    transform.localScale *= 1.1f;
                     OrganismState = OrganismStateEnum.Roaming;
+                    HungerMeter = 0.0f - UnityEngine.Random.Range(0.0f, RateRandomness);
                 }
                 else if(HuntTarget != null) //Check that prey still exists, and update destination
                 {
                     Mover.MoveToTarget(HuntTarget.transform.position);
+                    OrganismState = OrganismStateEnum.Hunting;
                 }
                 else //Hunt target null (destroyed somehow)
                 {
                     OrganismState = OrganismStateEnum.Roaming;
-                    HungerMeter = 0.0f;
+                    HungerMeter = 0.0f - UnityEngine.Random.Range(0.0f, RateRandomness);
                 }
             }
 
@@ -147,7 +166,7 @@ public class Organism : MonoBehaviour
         }
         else
         {
-            HungerMeter = 0.0f;
+            HungerMeter = 0.0f - UnityEngine.Random.Range(0.0f, RateRandomness);
         }
     }
 
@@ -159,8 +178,14 @@ public class Organism : MonoBehaviour
         if (OrganismState == OrganismStateEnum.Roaming)
         {
             //Generate List of Mates
-            List<Organism> MateList = GetOrganismsOfSpecies(SpeciesID);
-            Organism Tmp = MateList[0];
+            List<Organism> MateList = GetOrganismsOfSpecies((int)SpeciesID);
+            Organism Tmp;
+            if (MateList.Count == 0)
+            {
+                BreedMeter = 0.0f - UnityEngine.Random.Range(0.0f, RateRandomness);
+                return;
+            }
+            Tmp = MateList[0];
             foreach (Organism o in MateList)
             {
                 if (o.ActualDesirability > Tmp.ActualDesirability)
@@ -177,7 +202,7 @@ public class Organism : MonoBehaviour
         {
             if (MateTarget != null && (transform.position - MateTarget.transform.position).magnitude <= InteractionRadius) //Mate close enough
             {
-                BreedMeter = 0.0f;
+                BreedMeter = 0.0f - UnityEngine.Random.Range(0.0f, RateRandomness);
                 Spawn(MateTarget);
                 MateTarget = null;
                 OrganismState = OrganismStateEnum.Roaming;
@@ -189,13 +214,13 @@ public class Organism : MonoBehaviour
             else
             {
                 OrganismState = OrganismStateEnum.Roaming;
-                BreedMeter = 0.0f;
+                BreedMeter = 0.0f - UnityEngine.Random.Range(0.0f, RateRandomness);
             }
         }
 
 
         //If mate found, mate and set MateMeter to 0.0f
-        BreedMeter = 0.0f;
+        BreedMeter = 0.0f - UnityEngine.Random.Range(0.0f, RateRandomness);
     }
 
     void Spawn(Organism other)
@@ -228,8 +253,8 @@ public class Organism : MonoBehaviour
         ActualDesirability = BaseDesirability + Genotype.GetDesirability();
         ActualSurvivability = BaseSurvivability + Genotype.GetSurvivability();
 
-        Debug.Log("ActualDes: " + ActualDesirability);
-        Debug.Log("ActualSurv: " + ActualSurvivability);
+        //Debug.Log("ActualDes: " + ActualDesirability);
+        //Debug.Log("ActualSurv: " + ActualSurvivability);
     }
 
 }

@@ -23,8 +23,6 @@ public class Genotype : MonoBehaviour {
         StartCoroutine(DelayedStart());
 	}
 
-    private float elapsed = 0.0f;
-
 	// Update is called once per frame
 	void Update ()
     {
@@ -38,7 +36,7 @@ public class Genotype : MonoBehaviour {
         {
             Tmp += x.GetDesirability();
         }
-        Debug.Log("Desirability: " + Tmp);
+        //Debug.Log("Desirability: " + Tmp);
         return Tmp;
     }
 
@@ -49,7 +47,7 @@ public class Genotype : MonoBehaviour {
         {
             Tmp += x.GetSurvivability();
         }
-        Debug.Log("Survivability: " + Tmp);
+        //Debug.Log("Survivability: " + Tmp);
         return Tmp;
     }
 
@@ -57,7 +55,6 @@ public class Genotype : MonoBehaviour {
     // select new Gene for organism based on probability: .25 probability per gene
     public void SpawnOrganism(Genotype other)
     {
-        Debug.Log("Spawn Call!");
         //TODO: Punnet Square computation and organism creation
         if (CheckSameGenes(other))
         {
@@ -68,6 +65,8 @@ public class Genotype : MonoBehaviour {
             ChildMesh.mesh = GetComponent<MeshFilter>().mesh;
             MeshRenderer ChildMeshRenderer = Child.AddComponent<MeshRenderer>();
             ChildMeshRenderer.material = new Material(Shader.Find("Standard"));
+
+            CopyComponent(GetComponent<BoxCollider>(), Child);
             
             //Compute child's punnett squares
             for (int i = 0; i < GeneList.Count; ++i)
@@ -106,7 +105,7 @@ public class Genotype : MonoBehaviour {
 
             }
 
-            Child.AddComponent<Organism>();
+            CopyComponent(GetComponent<Organism>(), Child);
         }
     }
 
@@ -137,7 +136,7 @@ public class Genotype : MonoBehaviour {
     {
         yield return new WaitForSeconds(1.0f);
 
-        PrintPhenome();
+        //PrintPhenome();
     }
 
     Component CopyComponent(Component original, GameObject destination)
