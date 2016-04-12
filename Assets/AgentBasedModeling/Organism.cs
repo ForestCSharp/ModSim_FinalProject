@@ -13,36 +13,37 @@ public class Organism : MonoBehaviour
     public uint SpeciesID;
 
     public float RoamRadius = 2;
-    public int BaseSpeed = 4;
     public int BaseDesirability = 1;
     public int BaseSurvivability = 1;
 
     public float HungerRate = 5.0f;
     public float BreedRate = 10.0f;
     public float RoamRate = 2.0f;
+    public float LifeSpan = 30.0f;
     public float RateRandomness = 0.5f;
 
     public float InteractionRadius = 10.0f;
 
     //Type of Organism this organism likes to eat
-    public Organism Prey;
+    public int PreyID = -1;
 
 
     //Computed via genome
     private int ActualDesirability;
     private int ActualSurvivability;
 
+    private float ActualLifeSpan;
+
     private float HungerMeter;
     private float BreedMeter;
     private float RoamMeter;
+    private float LifespanMeter;
 
     private Genotype Genotype;
 
     private SimpleMoveTo Mover;
 
     private Vector3 RoamTarget;
-
-    private int PreyID = -1;
 
     //Current State of organism
     private enum OrganismStateEnum { Roaming, Hunting, Breeding};
@@ -56,18 +57,14 @@ public class Organism : MonoBehaviour
 
         Mover = GetComponent<SimpleMoveTo>();
         Genotype = gameObject.AddComponent<Genotype>();
-        GetComponent<NavMeshAgent>().speed = BaseSpeed;
 
         StartCoroutine(DelayedStart());
-
-        if (Prey != null)
-        {
-            PreyID = (int)Prey.SpeciesID;
-        }
 
         HungerMeter = 0.0f - UnityEngine.Random.Range(0.0f, RateRandomness); 
         BreedMeter = 0.0f - UnityEngine.Random.Range(0.0f, RateRandomness);
         RoamMeter = 0.0f - UnityEngine.Random.Range(0.0f, RateRandomness);
+
+        ActualLifeSpan = LifeSpan + Random.Range(0.0f, LifeSpan / 5.0f);
 
     }
 
@@ -78,12 +75,23 @@ public class Organism : MonoBehaviour
         HungerMeter += Time.deltaTime;
         BreedMeter += Time.deltaTime;
         RoamMeter += Time.deltaTime;
+        LifespanMeter += Time.deltaTime;
 
-        if (HungerMeter >= HungerRate) //called until food is actually consumed, at which point Eat() resets HungerMeter to 0.0f
+        if (SpeciesID == 2)
+        {
+            Debug.Log("organism State: " + OrganismState);
+        }
+           
+        if (LifespanMeter >= ActualLifeSpan)
+        {
+            Destroy(this.gameObject);
+        }
+
+        if (HungerMeter >= HungerRate && OrganismState != OrganismStateEnum.Breeding) //called until food is actually consumed, at which point Eat() resets HungerMeter to 0.0f
         {
             Eat();
         }
-        else if (BreedMeter >= BreedRate) //called until mate is found and new organism is spawned, at which point Breed() resets MateMeter to 0.0f;
+        else if (BreedMeter >= BreedRate && OrganismState != OrganismStateEnum.Hunting) //called until mate is found and new organism is spawned, at which point Breed() resets MateMeter to 0.0f;
         {
             Breed();
         }
@@ -114,8 +122,7 @@ public class Organism : MonoBehaviour
                 //Generate List of Prey
                 List<Organism> PreyList = GetOrganismsOfSpecies(PreyID);
 
-                //TODO: function that weighs closeness with weakness (lower Survivability)
-                //Find the weakest prey and set as destination
+                //Find the weakest prey and set as destination (tie breaks broken by proximity)
 
                 Organism Tmp;
                 if (PreyList.Count == 0)
@@ -125,8 +132,16 @@ public class Organism : MonoBehaviour
                 }
                 Tmp= PreyList[0];
                 foreach (Organism o in PreyList)
-                { 
-                    if (o != null && o.ActualSurvivability < Tmp.ActualSurvivability)
+                {
+
+                    bool IsWeaker = o.ActualSurvivability < Tmp.ActualSurvivability;
+
+                    //Tiebreak condition setup
+                    float DistanceFromTmp = (Tmp.transform.position - transform.position).magnitude;
+                    float DistanceFromCur = (o.transform.position - transform.position).magnitude;
+                    bool ProximityTieBreak = (o.ActualSurvivability == Tmp.ActualSurvivability) && (DistanceFromCur < DistanceFromTmp);
+                    //o is new temp if survivability is 
+                    if (o != null && (IsWeaker || ProximityTieBreak))
                     {
                         Tmp = o;
                     }
@@ -161,12 +176,11 @@ public class Organism : MonoBehaviour
                     HungerMeter = 0.0f - UnityEngine.Random.Range(0.0f, RateRandomness);
                 }
             }
-
-
         }
         else
         {
             HungerMeter = 0.0f - UnityEngine.Random.Range(0.0f, RateRandomness);
+            OrganismState = OrganismStateEnum.Roaming;
         }
     }
 
@@ -188,7 +202,14 @@ public class Organism : MonoBehaviour
             Tmp = MateList[0];
             foreach (Organism o in MateList)
             {
-                if (o.ActualDesirability > Tmp.ActualDesirability)
+                bool IsMoreDesirable = o.ActualDesirability > Tmp.ActualDesirability;
+
+                //Tiebreak condition setup
+                float DistanceFromTmp = (Tmp.transform.position - transform.position).magnitude;
+                float DistanceFromCur = (o.transform.position - transform.position).magnitude;
+                bool ProximityTieBreak = (o.ActualDesirability == Tmp.ActualDesirability) && (DistanceFromCur < DistanceFromTmp);
+
+                if (o != null && (IsMoreDesirable || ProximityTieBreak))
                 {
                     Tmp = o;
                 }
@@ -210,6 +231,8 @@ public class Organism : MonoBehaviour
             else if (MateTarget != null)
             {
                 Mover.MoveToTarget(MateTarget.transform.position);
+                OrganismState = OrganismStateEnum.Breeding;
+
             }
             else
             {
@@ -217,7 +240,6 @@ public class Organism : MonoBehaviour
                 BreedMeter = 0.0f - UnityEngine.Random.Range(0.0f, RateRandomness);
             }
         }
-
 
         //If mate found, mate and set MateMeter to 0.0f
         BreedMeter = 0.0f - UnityEngine.Random.Range(0.0f, RateRandomness);

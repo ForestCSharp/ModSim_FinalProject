@@ -106,6 +106,11 @@ public class Genotype : MonoBehaviour {
             }
 
             CopyComponent(GetComponent<Organism>(), Child);
+            NavMeshAgent MyNav = GetComponent<NavMeshAgent>();
+            NavMeshAgent ChildNav = Child.GetComponent<NavMeshAgent>();
+            ChildNav.radius = MyNav.radius;
+            ChildNav.height = MyNav.height;
+            ChildNav.baseOffset = MyNav.baseOffset;
         }
     }
 

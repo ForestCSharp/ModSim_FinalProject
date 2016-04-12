@@ -24,6 +24,9 @@ public class SimpleMoveTo : MonoBehaviour {
     public void MoveToTarget(Vector3 target)
     {
         NavMeshAgent agent = GetComponent<NavMeshAgent>();
-        agent.destination = target;
+        if (agent != null)
+        {
+            agent.destination = target;
+        }
     }
 }

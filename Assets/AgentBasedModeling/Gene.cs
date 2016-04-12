@@ -33,6 +33,11 @@ public class Gene : MonoBehaviour {
     //Chooses the higher dominance Allele and expresses it
     void Express()
     {
+        if (First == null || Second == null)
+        {
+            Debug.Log("Error: Alleles not set on " + GeneName);
+            return;
+        }
         if (First.Dominance >= Second.Dominance)
         {
             First.Express();
