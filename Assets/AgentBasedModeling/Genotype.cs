@@ -29,6 +29,11 @@ public class Genotype : MonoBehaviour {
 
     }
 
+    public List<Gene> GetGenelist()
+    {
+        return GeneList;
+    }
+
     public int GetDesirability()
     {
         int Tmp = 0;

@@ -5,6 +5,7 @@ using System.Collections;
 public class Allele : MonoBehaviour {
 
     //Rank of dominance (higher outranks lower)
+    public string AlleleName;
     public int Dominance = 0;
 
     public int Desirability = 0;

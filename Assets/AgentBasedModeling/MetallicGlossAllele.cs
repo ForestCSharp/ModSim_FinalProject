@@ -21,8 +21,8 @@ public class MetallicGlossAllele : Allele {
         MeshRenderer MR = GetComponent<MeshRenderer>();
         for (int i = 0; i < MR.materials.Length; ++i)
         {
-            MR.materials[i].SetFloat("_Metallic", 1.0f);
-            MR.materials[i].SetFloat("_Glossiness", 1.0f);
+            MR.materials[i].SetFloat("_Metallic", Metallic);
+            MR.materials[i].SetFloat("_Glossiness", Glossiness);
         }
     }
 }

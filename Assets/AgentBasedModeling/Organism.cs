@@ -39,7 +39,7 @@ public class Organism : MonoBehaviour
     private float RoamMeter;
     private float LifespanMeter;
 
-    private Genotype Genotype;
+    private Genotype genotype;
 
     private SimpleMoveTo Mover;
 
@@ -56,7 +56,7 @@ public class Organism : MonoBehaviour
     {
 
         Mover = GetComponent<SimpleMoveTo>();
-        Genotype = gameObject.AddComponent<Genotype>();
+        genotype = gameObject.AddComponent<Genotype>();
 
         StartCoroutine(DelayedStart());
 
@@ -76,11 +76,6 @@ public class Organism : MonoBehaviour
         BreedMeter += Time.deltaTime;
         RoamMeter += Time.deltaTime;
         LifespanMeter += Time.deltaTime;
-
-        if (SpeciesID == 2)
-        {
-            Debug.Log("organism State: " + OrganismState);
-        }
            
         if (LifespanMeter >= ActualLifeSpan)
         {
@@ -247,7 +242,7 @@ public class Organism : MonoBehaviour
 
     void Spawn(Organism other)
     {
-        Genotype.SpawnOrganism(other.Genotype);
+        genotype.SpawnOrganism(other.genotype);
     }
 
 
@@ -272,11 +267,14 @@ public class Organism : MonoBehaviour
     IEnumerator DelayedStart()
     {
         yield return new WaitForSeconds(1.0f);
-        ActualDesirability = BaseDesirability + Genotype.GetDesirability();
-        ActualSurvivability = BaseSurvivability + Genotype.GetSurvivability();
+        ActualDesirability = BaseDesirability + genotype.GetDesirability();
+        ActualSurvivability = BaseSurvivability + genotype.GetSurvivability();
 
-        //Debug.Log("ActualDes: " + ActualDesirability);
-        //Debug.Log("ActualSurv: " + ActualSurvivability);
+    }
+
+    public List<Gene> GetGeneList()
+    {
+        return genotype.GetGenelist();
     }
 
 }
